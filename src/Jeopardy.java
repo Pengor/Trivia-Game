@@ -2,6 +2,7 @@ package org.superthread.jeopardy;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -63,7 +64,7 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 				SimpleAttributeSet center = new SimpleAttributeSet();
 				StyleConstants.setAlignment(center,StyleConstants.ALIGN_CENTER);
 				doc.setParagraphAttributes(0, doc.getLength(), center, false);
-				newTextPane.setFont(new Font("Helvetica", Font.BOLD, 25));
+				//newTextPane.setFont(new Font("Helvetica", Font.BOLD, 25));
 				if (i == 0)
 					newTextPane.setForeground(Color.WHITE);
 				else
@@ -74,13 +75,23 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		
 		// Create text pane for enlarged clue text
 		JTextPane bigCluePane = new JTextPane();
+		bigCluePane.setEditable(false);
 		bigCluePane.setFont(new Font(Font.SERIF, Font.PLAIN, 25));
-		bigCluePane.setForeground(Color.WHITE);
+		bigCluePane.setOpaque(true);
 		bigCluePane.setBackground(jepBlue);
-		bigCluePane.setVisible(false);
+		StyledDocument doc = bigCluePane.getStyledDocument();
+		SimpleAttributeSet center = new SimpleAttributeSet();
+		StyleConstants.setAlignment(center,StyleConstants.ALIGN_CENTER);
+		doc.setParagraphAttributes(0, doc.getLength(), center, false);
+		bigCluePane.setForeground(Color.WHITE);
+		
+		Container bigClueContainer = new Container();
+		bigClueContainer.setPreferredSize(new Dimension(30, 30));
+		bigClueContainer.add(bigCluePane);
 
 		// Create black background panel
 		JPanel jeopardyPanel = new JPanel();
+		jeopardyPanel.setPreferredSize(new Dimension(30, 30));
 		jeopardyPanel.setBackground(Color.BLACK);
 
 		// TODO: white Helvetica for Category Headings and yellow Dollar Values
@@ -121,9 +132,9 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		
 		clueFrame.add(jeopardyPanel);
 		clueFrame.add(textPaneContainer);
-		clueFrame.add(bigCluePane);
+		clueFrame.add(bigClueContainer);
 		
-		clueFrame.setSize(800, 500);
+		clueFrame.setPreferredSize(new Dimension(800, 500));
 		
 		//clueFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		clueFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -139,13 +150,15 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		controlFrame.setJMenuBar(controlMenuBar);
 		
 		controlFrame.setTitle("Superthread Trivia Control Panel");
-		controlFrame.setSize(300, 300);
+		controlFrame.setPreferredSize(new Dimension(300, 300));
 		controlFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		controlFrame.addComponentListener(this);
 		
 		// Final adjustments and reveal
 		resizeControlComponents();
 		resizeClueComponents();
+		controlFrame.pack();
+		clueFrame.pack();
 		controlFrame.setVisible(true);
 		clueFrame.setVisible(true);
 	}
@@ -195,7 +208,8 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		
 		// Resize background panel
 		JPanel jeopardyPanel = (JPanel) clueFrame.getContentPane().getComponent(0);
-		jeopardyPanel.setSize(clueFrame.getWidth(), clueFrame.getHeight());
+		jeopardyPanel.setPreferredSize(
+				new Dimension(clueFrame.getWidth(), clueFrame.getHeight()));
 		
 		// Resize and position the 6x6 grid of text panes
 		int x = 0;
@@ -203,9 +217,10 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		Container textPaneContainer = getClueContain();
 		for (int i=0; i<textPaneContainer.getComponentCount(); i++) {
 			JTextPane tempPane = getClueComponent(i);
-			tempPane.setSize(
-					(int)((clueFrame.getWidth() - 50) / 6.0), 
-					(int)((clueFrame.getHeight() - 70) / 6.0));
+			tempPane.setPreferredSize( 
+					new Dimension(
+							(int)((clueFrame.getWidth() - 50) / 6.0), 
+							(int)((clueFrame.getHeight() - 70) / 6.0)));
 			
 			tempPane.setLocation(
 					tempPane.getWidth() * x + 5 * (x+1), 
@@ -227,15 +242,25 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 				y++;
 			}
 		}
-		/*
+		
 		// Resize and position the (usually-invisible) bigCluePane
-		JTextPane bigCluePane = (JTextPane) clueFrame.getContentPane().getComponent(2);
-		bigCluePane.setSize(
-				(clueFrame.getWidth() - 50), 
-				(clueFrame.getHeight() - 70)*(5/6));
+		Container bigClueContainer = (Container) clueFrame.getContentPane().getComponent(2);
+		JTextPane bigCluePane = (JTextPane) bigClueContainer.getComponent(0);
+		//bigCluePane.setSize(
+		//		(clueFrame.getWidth() - 50), 
+		//		(clueFrame.getHeight() - 70)*(5/6));
+		//bigCluePane.setLocation(
+		//		bigCluePane.getWidth() + 5,
+		//		bigCluePane.getHeight() + 5 + (clueFrame.getHeight() - 70)/6 );
+		//bigCluePane.setSize(20, 20);
+		bigCluePane.setPreferredSize(
+				new Dimension(
+						(int)((clueFrame.getWidth() - 50) / 6.0), 
+						(int)((clueFrame.getHeight() - 70) / 6.0)));
+		
 		bigCluePane.setLocation(
-				bigCluePane.getWidth() + 5,
-				bigCluePane.getHeight() + 5 + (clueFrame.getHeight() - 70)/6 );*/
+				bigCluePane.getWidth() * x + 5 * (x+1), 
+				bigCluePane.getHeight() * y + 5 * (y+1));
 	}
 	
 	/**
@@ -248,10 +273,10 @@ class Jeopardy implements /*ActionListener*/ ComponentListener{
 		Container buttonContainer = getControlContain();
 		for (int i=0; i<buttonContainer.getComponentCount(); i++) {
 			JButton tempBttn = getControlComponent(i);
-			tempBttn.setSize(
-					(int)((controlFrame.getWidth() - 50) / 6.0), 
-					(int)((controlFrame.getHeight() - 95) / 6.0));
-			
+			tempBttn.setPreferredSize( 
+					new Dimension(
+							(int)((controlFrame.getWidth() - 50) / 6.0), 
+							(int)((controlFrame.getHeight() - 95) / 6.0)));
 			tempBttn.setLocation(
 					tempBttn.getWidth() * x + 5 * (x+1), 
 					tempBttn.getHeight() * y + 5 * (y+1));
